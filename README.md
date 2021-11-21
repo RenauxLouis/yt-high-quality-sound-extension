@@ -7,9 +7,9 @@ Browser extension to play high quality audio over YT video
 ```
 npm install aws-sdk browserify
 ```
-4. Run
+3. Run browserify to build the `bfy_content.js` script from `content.js`(https://github.com/browserify/browserify)
 ```
 npm run build
 ```
-3. Load extension in Chrome within `chrome://extensions/`
-4. Open `https://www.youtube.com/watch?v=MdhIfhuP42g`
+4. Load extension folder (this repo) in Chrome within `chrome://extensions/`
+5. Open `https://www.youtube.com/watch?v=MdhIfhuP42g`
