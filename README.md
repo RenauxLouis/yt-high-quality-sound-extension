@@ -2,8 +2,12 @@
 Browser extension to play high quality audio over YT video
 
 # Setup
-1. Install npm and required packages
-2. Run
+1. Install npm
+2. Install packages with
+```
+npm install aws-sdk browserify
+```
+4. Run
 ```
 npm run build
 ```
