@@ -1,0 +1,13 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "description": "",
+  "main": "content.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "browserify content.js -o bfy_content.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
