@@ -1,17 +1,40 @@
 console.log("coucou");
 
-const BUCKET_NAME = "pure-asmr";
-const OBJECT_NAME = "olive_et_tom.mp3";
+//TODO: Move AWS init to background.js
 const accessKeyId = "AKIAUEKUXBWYSUCT7QCF";
 const secretAccessKey = "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";
 const AWS = require("aws-sdk")
+AWS.config.update({
+    accessKeyId: accessKeyId,
+    secretAccessKey: secretAccessKey,
+    region: "us-east-2",
+    signatureVersion: "v4"
+});
+const s3 = new AWS.S3()
+
+/*
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    if (request.greeting === "hello")
+      sendResponse({farewell: "goodbye"});
+  }
+);
+*/
+
+const BUCKET_NAME = "pure-asmr";
+const OBJECT_NAME = "olive_et_tom.mp3";
+
+//TODO: Change to manifest V3
 
 function mute() {
-    for (const muteButton of document.getElementsByClassName(
-      "ytp-mute-button"
-    )) {
-      muteButton.click();
-    }
+  for (const muteButton of document.getElementsByClassName(
+    "ytp-mute-button"
+  )) {
+    muteButton.click();
+  }
 }
 
 function stream_music() {
@@ -36,7 +59,6 @@ function stream_music() {
     console.log("Video starting");
     video.pause();
     console.log("Video paused");
-    //TODO: MUTE ONLY WHEN NOT DEFAULT MUTE
     mute();
     console.log("Video muted");
   }
@@ -46,16 +68,6 @@ function stream_music() {
 
   //TODO: Assert length of music file maps video length
 
-  // CONNECT TO AWS
-  AWS.config.update({
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    region: "us-east-2",
-    signatureVersion: "v4"
-  });
-
-  // QUERY MUSIC FILE
-  const s3 = new AWS.S3()
   const signedUrlExpireSeconds = 60 * 5
   const readSignedUrl = s3.getSignedUrl("getObject", {
     Bucket: BUCKET_NAME,
@@ -70,20 +82,19 @@ function stream_music() {
   source1.type = "audio/mpeg";
   source1.src = readSignedUrl;
   audioElement.appendChild(source1);
-  audioElement.load();
+  //audioElement.load();
 
   // PLAY AUDIO WHEN VIDEO STARTS
-  console.log("Start")
-  video.currentTime = 0;
-  audioElement.currentTime = 0;
-  console.log("Mid")
-  audioElement.play();
-  video.play();
-  console.log("Played")
+  var pro_audio = audioElement.play();
+  console.log(pro_audio);
+  if (pro_audio !== undefined) {
+    video.play();
+  }
 
   //TODO: FIX WHEN USE OF SHORTCUTS
+  //TODO: FIX WHEN CLICK ON VIDEO TO PAUSE
 
-  // PAUSE/RESUME AUDIO FILE WHEN USER CLICKS IT ON THE VIDEO
+  // PAUSE/RESUME AUDIO FILE WHEN USER CLICKS PLAY/PAUSE ON THE VIDEO
   play_button = document.getElementsByClassName("ytp-play-button")[0];
   play_button.addEventListener("click", function () {
     videoPaused = video.paused;
