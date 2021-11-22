@@ -15,7 +15,7 @@ npm run build
 4. Load extension folder (this repo) in Chrome within `chrome://extensions/`
 5. Open `https://www.youtube.com/watch?v=MdhIfhuP42g`
 
-# Experiment
+# Code updates
 
 1. Changes made to `content.js` have to be parsed to `bfy_content.js` again so the following has to be run again:
 ```
