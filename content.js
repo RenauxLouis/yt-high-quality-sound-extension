@@ -37,6 +37,28 @@ function mute() {
   }
 }
 
+function load_video() {
+}
+
+function load_audio() {
+  const signedUrlExpireSeconds = 60 * 5
+  const readSignedUrl = s3.getSignedUrl("getObject", {
+    Bucket: BUCKET_NAME,
+    Key: OBJECT_NAME,
+    Expires: signedUrlExpireSeconds
+  });
+  // BUILD AUDIO ELEMENT IN BROWSER
+  var audioElement = document.createElement("audio");
+  audioElement.setAttribute("preload", "auto");
+  audioElement.autobuffer = true;
+  var source1 = document.createElement("source");
+  source1.type = "audio/mpeg";
+  source1.src = readSignedUrl;
+  audioElement.appendChild(source1);
+  audioElement.play()
+  return audioElement
+}
+
 function stream_music() {
 
   const video = document.querySelector('video');
@@ -53,43 +75,38 @@ function stream_music() {
     console.log("this is an ad")
   } else {
   */
-  console.log("the video is playing")
-  if (playing()) {
-    //TODO: Assert autoplay
-    console.log("Video starting");
-    video.pause();
-    console.log("Video paused");
-    mute();
-    console.log("Video muted");
-  }
+//   console.log("the video is playing")
+//   if (playing()) {
+//     //TODO: Assert autoplay
+//     console.log("Video starting");
+//     video.pause();
+//     console.log("Video paused");
+//     mute();
+//     console.log("Video muted");
+//   }
   //TODO: Assert video muted
   // document.querySelector("video").defaultMuted
   // document.querySelector("video").muted
 
   //TODO: Assert length of music file maps video length
 
-  const signedUrlExpireSeconds = 60 * 5
-  const readSignedUrl = s3.getSignedUrl("getObject", {
-    Bucket: BUCKET_NAME,
-    Key: OBJECT_NAME,
-    Expires: signedUrlExpireSeconds
-  });
-  // BUILD AUDIO ELEMENT IN BROWSER
-  var audioElement = document.createElement("audio");
-  audioElement.setAttribute("preload", "auto");
-  audioElement.autobuffer = true;
-  var source1 = document.createElement("source");
-  source1.type = "audio/mpeg";
-  source1.src = readSignedUrl;
-  audioElement.appendChild(source1);
+
   //audioElement.load();
 
   // PLAY AUDIO WHEN VIDEO STARTS
-  var pro_audio = audioElement.play();
-  console.log(pro_audio);
-  if (pro_audio !== undefined) {
-    video.play();
-  }
+//   var pro_audio = audioElement.play();
+//   console.log(pro_audio);
+//   if (pro_audio !== undefined) {
+//     video.play();
+//   }
+  video.pause();
+  //let [someResult, anotherResult] = await Promise.all([loadVideo(), loadAudio()]);
+  let audioElement = await loadAudio();
+  console.log(audioElement);
+  audioElement.currentTime = 0;
+  video.currentTime = 0;
+  audioElement.play();
+  video.play();
 
   //TODO: FIX WHEN USE OF SHORTCUTS
   //TODO: FIX WHEN CLICK ON VIDEO TO PAUSE
