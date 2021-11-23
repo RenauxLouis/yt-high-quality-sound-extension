@@ -25,7 +25,7 @@ chrome.runtime.onMessage.addListener(
 */
 
 const BUCKET_NAME = "pure-asmr";
-const OBJECT_NAME = "olive_et_tom.mp3";
+const OBJECT_NAME = "the-duck-song.mp3";
 
 //TODO: Change to manifest V3
 
