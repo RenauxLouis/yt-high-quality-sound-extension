@@ -40,7 +40,7 @@ function mute() {
 function load_video() {
 }
 
-function load_audio() {
+async function load_audio() {
   const signedUrlExpireSeconds = 60 * 5
   const readSignedUrl = s3.getSignedUrl("getObject", {
     Bucket: BUCKET_NAME,
@@ -55,8 +55,8 @@ function load_audio() {
   source1.type = "audio/mpeg";
   source1.src = readSignedUrl;
   audioElement.appendChild(source1);
-  audioElement.play()
-  return audioElement
+  audioElement.play();
+  return await Promise.resolve(audioElement);
 }
 
 function stream_music() {
@@ -101,7 +101,7 @@ function stream_music() {
 //   }
   video.pause();
   //let [someResult, anotherResult] = await Promise.all([loadVideo(), loadAudio()]);
-  let audioElement = await loadAudio();
+  loadAudio().then(alert);
   console.log(audioElement);
   audioElement.currentTime = 0;
   video.currentTime = 0;
