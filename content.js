@@ -37,28 +37,6 @@ function mute() {
   }
 }
 
-function load_video() {
-}
-
-async function loadAudio() {
-  const signedUrlExpireSeconds = 60 * 5
-  const readSignedUrl = s3.getSignedUrl("getObject", {
-    Bucket: BUCKET_NAME,
-    Key: OBJECT_NAME,
-    Expires: signedUrlExpireSeconds
-  });
-  // BUILD AUDIO ELEMENT IN BROWSER
-  var audioElement = document.createElement("audio");
-  audioElement.setAttribute("preload", "auto");
-  audioElement.autobuffer = true;
-  var source1 = document.createElement("source");
-  source1.type = "audio/mpeg";
-  source1.src = readSignedUrl;
-  audioElement.appendChild(source1);
-  audioElement.play();
-  return await Promise.resolve(audioElement);
-}
-
 function stream_music() {
 
   const video = document.querySelector('video');
@@ -101,8 +79,23 @@ function stream_music() {
 //   }
   video.pause();
   //let [someResult, anotherResult] = await Promise.all([loadVideo(), loadAudio()]);
-  var audioElement = loadAudio().then(alert);
-  console.log(audioElement);
+  const signedUrlExpireSeconds = 60 * 5
+  const readSignedUrl = s3.getSignedUrl("getObject", {
+    Bucket: BUCKET_NAME,
+    Key: OBJECT_NAME,
+    Expires: signedUrlExpireSeconds
+  });
+  // BUILD AUDIO ELEMENT IN BROWSER
+  var audioElement = document.createElement("audio");
+  audioElement.setAttribute("preload", "auto");
+  audioElement.autobuffer = true;
+  var source1 = document.createElement("source");
+  source1.type = "audio/mpeg";
+  source1.src = readSignedUrl;
+  audioElement.appendChild(source1);
+  console.log("Audio not ready");
+  await audioElement.play();
+  console.log("Audio ready");
   audioElement.currentTime = 0;
   video.currentTime = 0;
   audioElement.play();
