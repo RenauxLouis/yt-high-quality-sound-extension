@@ -40,7 +40,7 @@ function mute() {
 function load_video() {
 }
 
-async function load_audio() {
+async function loadAudio() {
   const signedUrlExpireSeconds = 60 * 5
   const readSignedUrl = s3.getSignedUrl("getObject", {
     Bucket: BUCKET_NAME,
