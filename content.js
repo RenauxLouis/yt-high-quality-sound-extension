@@ -94,7 +94,7 @@ function stream_music() {
   source1.src = readSignedUrl;
   audioElement.appendChild(source1);
   console.log("Audio not ready");
-  await audioElement.play();
+  audioElement.play();
   console.log("Audio ready");
   audioElement.currentTime = 0;
   video.currentTime = 0;
