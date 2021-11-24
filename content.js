@@ -101,7 +101,7 @@ function stream_music() {
 //   }
   video.pause();
   //let [someResult, anotherResult] = await Promise.all([loadVideo(), loadAudio()]);
-  loadAudio().then(alert);
+  var audioElement = loadAudio().then(alert);
   console.log(audioElement);
   audioElement.currentTime = 0;
   video.currentTime = 0;
