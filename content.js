@@ -93,14 +93,25 @@ function stream_music() {
   source1.type = "audio/mpeg";
   source1.src = readSignedUrl;
   audioElement.appendChild(source1);
+  audioElement.load;
+
   console.log("Audio not ready");
-  audioElement.play();
-  console.log("Audio ready");
-  audioElement.currentTime = 0;
-  video.currentTime = 0;
+
+  /*
+  audioElement.addEventListener("canplaythrough", (event) => {
+    audioElement.currentTime = 0;
+    video.currentTime = 0;
+    audioElement.play();
+    video.play();
+  });
+  */
+  console.log("Start")
+  console.log("Mid")
   audioElement.play();
   video.play();
-
+  video.currentTime = 0;
+  audioElement.currentTime = 0;
+  console.log("Played")
   //TODO: FIX WHEN USE OF SHORTCUTS
   //TODO: FIX WHEN CLICK ON VIDEO TO PAUSE
 
@@ -121,9 +132,8 @@ function stream_music() {
   //TODO: Fix issue when click drag and cursor out of image
   progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
   progressBar.addEventListener("click", function () {
-    newTime = video.currentTime;
-    console.log(newTime);
-    audioElement.currentTime = newTime;
+    console.log(video.currentTime);
+    audioElement.currentTime = video.currentTime;
   });
 }
 
