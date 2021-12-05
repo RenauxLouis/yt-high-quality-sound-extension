@@ -12,20 +12,9 @@ AWS.config.update({
 });
 const s3 = new AWS.S3()
 
-/*
-chrome.runtime.onMessage.addListener(
-  function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-    if (request.greeting === "hello")
-      sendResponse({farewell: "goodbye"});
-  }
-);
-*/
 
 const BUCKET_NAME = "pure-asmr";
-const OBJECT_NAME = "the-duck-song.mp3";
+const OBJECT_NAME = "the-duck-song-v2.mp3";
 
 //TODO: Change to manifest V3
 
@@ -37,16 +26,94 @@ function mute() {
   }
 }
 
-function stream_music() {
+async function adsPassed() {
+
+  progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
+
+  if (progressBar.style.backgroundColor === "rgb(255, 204, 0)") {
+    setTimeout(adsPassed, 50);
+    return;
+  } else {
+    return true;
+  }
+};
+
+async function audioLoaded() {
+
+  const signedUrlExpireSeconds = 60 * 5
+  const readSignedUrl = s3.getSignedUrl("getObject", {
+    Bucket: BUCKET_NAME,
+    Key: OBJECT_NAME,
+    Expires: signedUrlExpireSeconds
+  });
+
+  var audioElement = document.createElement("audio");
+  audioElement.setAttribute("preload", "auto");
+  audioElement.autobuffer = true;
+  var audioSource = document.createElement("source");
+  audioSource.type = "audio/mpeg";
+  audioSource.src = readSignedUrl;
+  audioElement.appendChild(audioSource);
+  audioElement.load;
+
+  return audioElement;
+}
+
+async function streamMusic() {
+
+  let [flagAdsPassed, audioElement] = await Promise.all([adsPassed(), audioLoaded()]);
+  console.log(flagAdsPassed);
 
   const video = document.querySelector('video');
+
+  video.pause();
+
+  audioElement.currentTime = 0;
+  video.currentTime = 0;
+
+  audioElement.addEventListener('canplaythrough', (event) => {
+    console.log('I think I can play through the entire ' +
+      'audio without ever having to stop to buffer.');
+    video.play();
+    audioElement.play();
+  });
+
+  console.log("Played")
+  //TODO: FIX WHEN USE OF SHORTCUTS
+  //TODO: FIX WHEN CLICK ON VIDEO TO PAUSE
+
+  // PAUSE/RESUME AUDIO FILE WHEN USER CLICKS PLAY/PAUSE ON THE VIDEO
+  playButton = document.getElementsByClassName("ytp-play-button")[0];
+  playButton.addEventListener("click", function () {
+    videoPaused = video.paused;
+    if (videoPaused) {
+      console.log("pause");
+      audioElement.pause();
+    } else {
+      console.log("resume");
+      audioElement.play();
+    };
+  });
+
+  // MOVE AUDIO FILE TIME WHEN USER CLICKS IT ON THE VIDEO
+  //TODO: Fix issue when click drag and cursor out of image
+  progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
+  progressBar.addEventListener("click", function () {
+    console.log(video.currentTime);
+    audioElement.currentTime = video.currentTime;
+  });
+}
+
+streamMusic();
+
+
+
+  // WAIT FOR AFTER ADS
+  /*
 
   function playing() {
     return !!(video.currentTime > 0 && !video.paused && !video.ended && video.readyState > 2);
   }
-
-  // WAIT FOR AFTER ADS
-  /*
   ad_showing = document.querySelector("div.ad-showing");
 
   ad_showing.addEventListener("ended", function () {
@@ -77,64 +144,20 @@ function stream_music() {
 //   if (pro_audio !== undefined) {
 //     video.play();
 //   }
-  video.pause();
-  //let [someResult, anotherResult] = await Promise.all([loadVideo(), loadAudio()]);
-  const signedUrlExpireSeconds = 60 * 5
-  const readSignedUrl = s3.getSignedUrl("getObject", {
-    Bucket: BUCKET_NAME,
-    Key: OBJECT_NAME,
-    Expires: signedUrlExpireSeconds
-  });
-  // BUILD AUDIO ELEMENT IN BROWSER
-  var audioElement = document.createElement("audio");
-  audioElement.setAttribute("preload", "auto");
-  audioElement.autobuffer = true;
-  var source1 = document.createElement("source");
-  source1.type = "audio/mpeg";
-  source1.src = readSignedUrl;
-  audioElement.appendChild(source1);
-  audioElement.load;
+//audioElement.addEventListener("canplaythrough", (event) => {
+//    audioElement.play();
+//    video.play();
+//  });
 
-  console.log("Audio not ready");
 
-  /*
-  audioElement.addEventListener("canplaythrough", (event) => {
-    audioElement.currentTime = 0;
-    video.currentTime = 0;
-    audioElement.play();
-    video.play();
-  });
-  */
-  console.log("Start")
-  console.log("Mid")
-  audioElement.play();
-  video.play();
-  video.currentTime = 0;
-  audioElement.currentTime = 0;
-  console.log("Played")
-  //TODO: FIX WHEN USE OF SHORTCUTS
-  //TODO: FIX WHEN CLICK ON VIDEO TO PAUSE
-
-  // PAUSE/RESUME AUDIO FILE WHEN USER CLICKS PLAY/PAUSE ON THE VIDEO
-  play_button = document.getElementsByClassName("ytp-play-button")[0];
-  play_button.addEventListener("click", function () {
-    videoPaused = video.paused;
-    if (videoPaused) {
-      console.log("pause");
-      audioElement.pause();
-    } else {
-      console.log("resume");
-      audioElement.play();
-    };
-  });
-
-  // MOVE AUDIO FILE TIME WHEN USER CLICKS IT ON THE VIDEO
-  //TODO: Fix issue when click drag and cursor out of image
-  progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
-  progressBar.addEventListener("click", function () {
-    console.log(video.currentTime);
-    audioElement.currentTime = video.currentTime;
-  });
-}
-
-stream_music();
+/*
+chrome.runtime.onMessage.addListener(
+  function(request, sender, sendResponse) {
+    console.log(sender.tab ?
+                "from a content script:" + sender.tab.url :
+                "from the extension");
+    if (request.greeting === "hello")
+      sendResponse({farewell: "goodbye"});
+  }
+);
+*/
