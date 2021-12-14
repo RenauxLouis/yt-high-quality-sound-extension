@@ -16,8 +16,6 @@ const s3 = new AWS.S3()
 const BUCKET_NAME = "pure-asmr";
 const OBJECT_NAME = "the-duck-song-v2.mp3";
 
-//TODO: Change to manifest V3
-
 function mute() {
   for (const muteButton of document.getElementsByClassName(
     "ytp-mute-button"
@@ -26,16 +24,34 @@ function mute() {
   }
 }
 
+async function adsPassed2() {
+
+  let promise = new Promise((res, rej) => {
+    setTimeout(() => res("Now it's done!"), 1000)
+  });
+  return promise
+
+}
+
 async function adsPassed() {
 
-  progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
+  const expectedDuration = 191;
 
-  if (progressBar.style.backgroundColor === "rgb(255, 204, 0)") {
-    setTimeout(adsPassed, 50);
-    return;
-  } else {
-    return true;
+  const video = document.querySelector("video");
+
+  while (Math.floor(video.duration) != expectedDuration) {
+    console.log(Math.floor(video.duration));
+    console.log("wait cause ads");
+    let promise = adsPassed2();
+    let result = await promise;
+    adsPassed();
   }
+
+  let promise = new Promise((res, rej) => {
+    setTimeout(() => res("Now it's done!"), 1)
+  });
+
+  return promise;
 };
 
 async function audioLoaded() {
@@ -61,10 +77,12 @@ async function audioLoaded() {
 
 async function streamMusic() {
 
-  let [flagAdsPassed, audioElement] = await Promise.all([adsPassed(), audioLoaded()]);
+
+  let [flagAdsPassed, audioElement] = await Promise.allSettled([adsPassed(), audioLoaded()]);
   console.log(flagAdsPassed);
 
-  const video = document.querySelector('video');
+  const video = document.querySelector("video");
+  console.log(video.duration);
 
   video.pause();
 
@@ -79,6 +97,7 @@ async function streamMusic() {
   });
 
   console.log("Played")
+
   //TODO: FIX WHEN USE OF SHORTCUTS
   //TODO: FIX WHEN CLICK ON VIDEO TO PAUSE
 
