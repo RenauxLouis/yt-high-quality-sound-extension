@@ -1,23 +1,12 @@
-console.log("init");
-
-/*
-// CONNECT TO AWS
-const accessKeyId = "AKIAUEKUXBWYSUCT7QCF";
-const secretAccessKey = "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";
-const AWS = require("aws-sdk")
-AWS.config.update({
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-    region: "us-east-2",
-    signatureVersion: "v4"
+chrome.runtime.onInstalled.addListener(function() {
+  chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
+    // changeInfo object: https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/tabs/onUpdated#changeInfo
+    // status is more reliable (in my case)
+    // use "alert(JSON.stringify(changeInfo))" to check what's available and works in your case
+    if (changeInfo.status === 'complete') {
+      chrome.tabs.sendMessage(tabId, {
+        message: 'TabUpdated'
+      });
+    }
+  })
 });
-const s3 = new AWS.S3()
-console.log(s3);
-
-// SEND THE CONNECTION TO THE CONTENT SCRIPT
-chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-    chrome.tabs.sendMessage(tabs[0].id, {greeting: "hello"}, function(response) {
-        console.log(response.farewell);
-  });
-});
-*/
