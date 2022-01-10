@@ -148,4 +148,32 @@ async function streamMusic() {
   }
 }
 
-streamMusic();
+console.log("in content");
+
+chrome.storage.local.get(["action"], function (result) {
+  isExtensionOn = result.action;
+  console.log(isExtensionOn);
+  if (isExtensionOn) {
+    console.log("stream music");
+    streamMusic();
+  } else {
+    console.log("NO stream music");
+  }
+});
+
+
+chrome.storage.onChanged.addListener(function(changes) {
+  location.reload();
+  /*
+  var isExtensionOn = changes["action"];
+  if (isExtensionOn.newValue) {
+    location.reload();
+    console.log("stream music");
+    streamMusic();
+  } else {
+    location.reload();
+    console.log(isExtensionOn);
+    console.log("NO stream music");
+  }
+  */
+});
