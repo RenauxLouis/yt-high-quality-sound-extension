@@ -114,7 +114,6 @@ async function streamMusic() {
       audioElement.play();
     });
 
-    // PLAY/PAUSE AUDIO FILE WHEN VIDEO PLAY/PAUSE
     video.addEventListener("pause", (event) => {
       audioElement.pause();
     })
@@ -122,7 +121,6 @@ async function streamMusic() {
         audioElement.play();
     })
 
-    // MOVE AUDIO FILE TIME WHEN USER CLICKS IT ON THE VIDEO
     //TODO: Fix issue when click drag and cursor out of image
     progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
     progressBar.addEventListener("click", function () {
@@ -161,19 +159,6 @@ chrome.storage.local.get(["action"], function (result) {
   }
 });
 
-
 chrome.storage.onChanged.addListener(function(changes) {
   location.reload();
-  /*
-  var isExtensionOn = changes["action"];
-  if (isExtensionOn.newValue) {
-    location.reload();
-    console.log("stream music");
-    streamMusic();
-  } else {
-    location.reload();
-    console.log(isExtensionOn);
-    console.log("NO stream music");
-  }
-  */
 });
