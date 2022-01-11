@@ -139,23 +139,16 @@ async function streamMusic() {
 
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
       if (request.message === 'TabUpdated') {
-        console.log("reload");
         location.reload();
       }
     })
   }
 }
 
-console.log("in content");
-
 chrome.storage.local.get(["action"], function (result) {
   isExtensionOn = result.action;
-  console.log(isExtensionOn);
   if (isExtensionOn) {
-    console.log("stream music");
     streamMusic();
-  } else {
-    console.log("NO stream music");
   }
 });
 

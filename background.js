@@ -21,7 +21,6 @@ function setIcon() {
 
 chrome.storage.onChanged.addListener(function (changes) {
   isExtensionOn = changes.action.newValue;
-  console.log(isExtensionOn);
 
   if (isExtensionOn) {
     chrome.action.setIcon({path: "icons/iconon-38.png"});
