@@ -90,6 +90,10 @@ async function audioLoaded(videoID) {
 
 async function streamMusic() {
 
+
+  muteButton = document.getElementsByClassName("ytp-mute-button")[0];
+  progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
+
   let validVideoIDS = await getDB();
 
   const url = location.href;
@@ -112,6 +116,11 @@ async function streamMusic() {
       video.play();
       video.muted = true;
       audioElement.play();
+
+      // If the YT player was muted by default, mute the audio
+      if (muteButton.title == "Unmute (m)") {
+        audioElement.muted = true;
+      }
     });
 
     video.addEventListener("pause", (event) => {
@@ -122,18 +131,13 @@ async function streamMusic() {
     })
 
     //TODO: Fix issue when click drag and cursor out of image
-    progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
     progressBar.addEventListener("click", function () {
       audioElement.currentTime = video.currentTime;
     });
 
     muteButton = document.getElementsByClassName("ytp-mute-button")[0];
     muteButton.addEventListener("click", function () {
-      if (audioElement.muted) {
-        audioElement.muted = false;
-      } else {
-        audioElement.muted = true;
-      }
+      audioElement.muted = !audioElement.muted;
       video.muted = true;
     });
 
