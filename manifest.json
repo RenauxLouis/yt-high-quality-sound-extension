@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "PURE ASMR PROTO",
-  "version": "4.0",
+  "version": "5.0",
   "content_scripts": [
     {
       "matches": ["*://www.youtube.com/*"],
