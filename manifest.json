@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "PURE ASMR",
+  "name": "PURE ASMR PROTO",
   "version": "4.0",
   "content_scripts": [
     {
@@ -16,6 +16,7 @@
     "default_popup": "popup.html"
   },
   "permissions": [
-    "storage"
+    "storage",
+    "tabs"
   ]
 }
