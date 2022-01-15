@@ -1,3 +1,5 @@
+const VERBOSE = false;
+
 const BUCKET_NAME = "pure-asmr";
 const YOUTUBE_PREFIX = "https://www.youtube.com/watch?v=";
 
@@ -18,17 +20,19 @@ async function getDB() {
 
   const dbUrl = s3.getSignedUrl("getObject", {
     Bucket: BUCKET_NAME,
-    Key: "video_ids.json",
+    Key: "duration_per_id.json",
     Expires: signedUrlExpireSeconds
   });
   const response = await fetch(dbUrl);
   let data = await response.json();
-  let validVideoIDS = data["ids"];
+  let durationPerValidVideoIDS = data["duration_per_id"];
 
-  return validVideoIDS;
+  return durationPerValidVideoIDS;
 }
 
 function videoInDB(url, videoID, validVideoIDS) {
+
+  if (VERBOSE) { console.log();}
 
   if (url.includes(YOUTUBE_PREFIX) && validVideoIDS.includes(videoID)) {
     return true;
@@ -45,16 +49,14 @@ async function adsPassed2() {
 
 }
 
-async function adsPassed() {
-
-  const expectedDuration = 191;
+async function adsPassed(expectedVideoDuration) {
 
   const video = document.querySelector("video");
 
-  while (Math.floor(video.duration) != expectedDuration) {
+  while (Math.floor(video.duration) != expectedVideoDuration) {
     let promise = adsPassed2();
     let result = await promise;
-    adsPassed();
+    adsPassed(expectedVideoDuration);
   }
 
   let promise = new Promise((res, rej) => {
@@ -94,14 +96,21 @@ async function streamMusic() {
   muteButton = document.getElementsByClassName("ytp-mute-button")[0];
   progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
 
-  let validVideoIDS = await getDB();
+  let durationPerValidVideoIDS = await getDB();
+  let validVideoIDS = Object.keys(durationPerValidVideoIDS);
+  if (VERBOSE) { console.log(validVideoIDS);}
 
   const url = location.href;
   const videoID = url.split("&")[0].replace(YOUTUBE_PREFIX, "");
 
   if (videoInDB(url, videoID, validVideoIDS)) {
 
-    let [flagAdsPassed, audioElementPromise] = await Promise.allSettled([adsPassed(), audioLoaded(videoID)]);
+    expectedVideoDuration = durationPerValidVideoIDS[videoID];
+
+    let [flagAdsPassed, audioElementPromise] = await Promise.allSettled([
+      adsPassed(expectedVideoDuration),
+      audioLoaded(videoID)
+    ]);
 
     var audioElement = audioElementPromise.value;
 
@@ -112,37 +121,49 @@ async function streamMusic() {
     audioElement.currentTime = 0;
     video.currentTime = 0;
 
-    audioElement.addEventListener('canplaythrough', (event) => {
+    if (VERBOSE) { console.log(flagAdsPassed);}
+    if (VERBOSE) { console.log(audioElement);}
+    if (VERBOSE) { console.log(video);}
+
+    audioElement.addEventListener("canplay", (event) => {
+
+      if (VERBOSE) { console.log("can play");}
       video.play();
       video.muted = true;
       audioElement.play();
 
       // If the YT player was muted by default, mute the audio
       if (muteButton.title == "Unmute (m)") {
+        if (VERBOSE) { console.log("auto mute");}
         audioElement.muted = true;
       }
     });
 
     video.addEventListener("pause", (event) => {
+      if (VERBOSE) { console.log("pause");}
       audioElement.pause();
     })
     video.addEventListener("play", (event) => {
-        audioElement.play();
+      if (VERBOSE) { console.log("play");}
+      audioElement.play();
     })
 
     //TODO: Fix issue when click drag and cursor out of image
     progressBar.addEventListener("click", function () {
+  if (VERBOSE) { console.log();}
       audioElement.currentTime = video.currentTime;
     });
 
     muteButton = document.getElementsByClassName("ytp-mute-button")[0];
     muteButton.addEventListener("click", function () {
+      if (VERBOSE) { console.log("mute/unmute");}
       audioElement.muted = !audioElement.muted;
       video.muted = true;
     });
 
     chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-      if (request.message === 'TabUpdated') {
+      if (request.message === "TabUpdated") {
+        if (VERBOSE) { console.log("URL changed: reload page");}
         location.reload();
       }
     })
@@ -152,10 +173,12 @@ async function streamMusic() {
 chrome.storage.local.get(["action"], function (result) {
   isExtensionOn = result.action;
   if (isExtensionOn) {
+    if (VERBOSE) { console.log("stream music");}
     streamMusic();
   }
 });
 
 chrome.storage.onChanged.addListener(function(changes) {
-  location.reload();
+  if (VERBOSE) { console.log("extension turned on/off: reload page");}
+    location.reload();
 });
