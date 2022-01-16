@@ -1,4 +1,4 @@
-const VERBOSE = false;
+const VERBOSE = true;
 
 const BUCKET_NAME = "pure-asmr";
 const YOUTUBE_PREFIX = "https://www.youtube.com/watch?v=";
@@ -103,6 +103,10 @@ async function streamMusic() {
   const url = location.href;
   const videoID = url.split("&")[0].replace(YOUTUBE_PREFIX, "");
 
+  const video = document.querySelector("video");
+
+  video.pause();
+
   if (videoInDB(url, videoID, validVideoIDS)) {
 
     expectedVideoDuration = durationPerValidVideoIDS[videoID];
@@ -113,10 +117,6 @@ async function streamMusic() {
     ]);
 
     var audioElement = audioElementPromise.value;
-
-    const video = document.querySelector("video");
-
-    video.pause();
 
     audioElement.currentTime = 0;
     video.currentTime = 0;
@@ -150,8 +150,12 @@ async function streamMusic() {
 
     //TODO: Fix issue when click drag and cursor out of image
     progressBar.addEventListener("click", function () {
-  if (VERBOSE) { console.log();}
+      if (VERBOSE) { console.log("change time: audio, video");}
+      if (VERBOSE) { console.log(audioElement.currentTime);}
+      if (VERBOSE) { console.log(video.currentTime);}
       audioElement.currentTime = video.currentTime;
+      if (VERBOSE) { console.log(audioElement.currentTime);}
+      if (VERBOSE) { console.log(video.currentTime);}
     });
 
     muteButton = document.getElementsByClassName("ytp-mute-button")[0];
