@@ -1,4 +1,4 @@
-const VERBOSE = true;
+const VERBOSE = false;
 
 const BUCKET_NAME = "pure-asmr";
 const YOUTUBE_PREFIX = "https://www.youtube.com/watch?v=";
@@ -20,7 +20,7 @@ async function getDB() {
 
   const dbUrl = s3.getSignedUrl("getObject", {
     Bucket: BUCKET_NAME,
-    Key: "duration_per_id.json",
+    Key: "duration_per_id_to_rickroll.json",
     Expires: signedUrlExpireSeconds
   });
   const response = await fetch(dbUrl);
@@ -66,11 +66,11 @@ async function adsPassed(expectedVideoDuration) {
   return promise;
 };
 
-async function audioLoaded(videoID) {
+async function audioLoaded() {
 
   const readSignedUrl = s3.getSignedUrl("getObject", {
     Bucket: BUCKET_NAME,
-    Key: videoID + ".mp3",
+    Key: "rickroll.mp3",
     Expires: signedUrlExpireSeconds
   });
 
@@ -92,7 +92,6 @@ async function audioLoaded(videoID) {
 
 async function streamMusic() {
 
-
   muteButton = document.getElementsByClassName("ytp-mute-button")[0];
   progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
 
@@ -113,10 +112,11 @@ async function streamMusic() {
 
     let [flagAdsPassed, audioElementPromise] = await Promise.allSettled([
       adsPassed(expectedVideoDuration),
-      audioLoaded(videoID)
+      audioLoaded()
     ]);
 
     var audioElement = audioElementPromise.value;
+    audioLength = audioElement.duration;
 
     audioElement.currentTime = 0;
     video.currentTime = 0;
@@ -153,7 +153,7 @@ async function streamMusic() {
       if (VERBOSE) { console.log("change time: audio, video");}
       if (VERBOSE) { console.log(audioElement.currentTime);}
       if (VERBOSE) { console.log(video.currentTime);}
-      audioElement.currentTime = video.currentTime;
+      audioElement.currentTime = video.currentTime % audioLength;
       if (VERBOSE) { console.log(audioElement.currentTime);}
       if (VERBOSE) { console.log(video.currentTime);}
     });
