@@ -1,4 +1,4 @@
-const VERBOSE = false;
+const VERBOSE = true;
 
 const BUCKET_NAME = "pure-asmr";
 const YOUTUBE_PREFIX = "https://www.youtube.com/watch?v=";
@@ -144,19 +144,18 @@ async function replaceAudio(videoID, durationPerValidVideoIDS) {
     if (VERBOSE) { console.log(video.currentTime);}
   });
 
+  // When tab changes, cut the audio
+  video.addEventListener("durationchange", (event) => {
+    if (VERBOSE) { console.log("duration changed = URL changed so reload page");}
+    location.reload();
+  });
+
   muteButton = document.getElementsByClassName("ytp-mute-button")[0];
   muteButton.addEventListener("click", function () {
     if (VERBOSE) { console.log("mute/unmute");}
     audioElement.muted = !audioElement.muted;
     video.muted = true;
   });
-
-  chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-    if (request.message === "TabUpdated") {
-      if (VERBOSE) { console.log("URL changed: reload page");}
-      location.reload();
-    }
-  })
 }
 
 async function streamMusic() {
