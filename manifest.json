@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "PURE ASMR DEMO",
-  "version": "1.2.8",
+  "name": "TRUE ASMR PROTOTYPE",
+  "version": "1.2.9",
   "content_scripts": [
     {
       "matches": ["*://www.youtube.com/*"],
