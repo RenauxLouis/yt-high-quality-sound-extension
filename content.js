@@ -59,6 +59,7 @@ async function adsPassed(expectedVideoDuration) {
     adsPassed(expectedVideoDuration);
   }
 
+  video.pause();
   let promise = new Promise((res, rej) => {
     setTimeout(() => res("Now it's done!"), 1)
   });
@@ -90,6 +91,73 @@ async function audioLoaded() {
   return promise;
 }
 
+async function replaceAudio(videoID, durationPerValidVideoIDS) {
+
+  const video = document.querySelector("video");
+
+  expectedVideoDuration = durationPerValidVideoIDS[videoID];
+
+  let [flagAdsPassed, audioElementPromise] = await Promise.allSettled([
+    adsPassed(expectedVideoDuration),
+    audioLoaded(videoID)
+  ]);
+
+  var audioElement = audioElementPromise.value;
+
+  audioElement.currentTime = 0;
+  video.currentTime = 0;
+
+  if (VERBOSE) { console.log(flagAdsPassed);}
+  if (VERBOSE) { console.log(audioElement);}
+  if (VERBOSE) { console.log(video);}
+
+  audioElement.addEventListener("canplay", (event) => {
+
+    if (VERBOSE) { console.log("can play");}
+    video.play();
+    video.muted = true;
+    audioElement.play();
+
+    // If the YT player was muted by default, mute the audio
+    if (muteButton.title == "Unmute (m)") {
+      if (VERBOSE) { console.log("auto mute");}
+      audioElement.muted = true;
+    }
+  });
+
+  video.addEventListener("pause", (event) => {
+    if (VERBOSE) { console.log("pause");}
+    audioElement.pause();
+  })
+  video.addEventListener("play", (event) => {
+    if (VERBOSE) { console.log("play");}
+    audioElement.play();
+  })
+
+  //TODO: Fix issue when click drag and cursor out of image
+  progressBar.addEventListener("click", function () {
+    if (VERBOSE) { console.log("change time: audio, video");}
+    if (VERBOSE) { console.log(audioElement.currentTime);}
+    if (VERBOSE) { console.log(video.currentTime);}
+    audioElement.currentTime = video.currentTime;
+    if (VERBOSE) { console.log(audioElement.currentTime);}
+    if (VERBOSE) { console.log(video.currentTime);}
+  });
+
+  // When tab changes, cut the audio
+  video.addEventListener("durationchange", (event) => {
+    if (VERBOSE) { console.log("duration changed = URL changed so reload page");}
+    location.reload();
+  });
+
+  muteButton = document.getElementsByClassName("ytp-mute-button")[0];
+  muteButton.addEventListener("click", function () {
+    if (VERBOSE) { console.log("mute/unmute");}
+    audioElement.muted = !audioElement.muted;
+    video.muted = true;
+  });
+}
+
 async function streamMusic() {
 
   muteButton = document.getElementsByClassName("ytp-mute-button")[0];
@@ -102,75 +170,10 @@ async function streamMusic() {
   const url = location.href;
   const videoID = url.split("&")[0].replace(YOUTUBE_PREFIX, "");
 
-  const video = document.querySelector("video");
-
-  video.pause();
-
   if (videoInDB(url, videoID, validVideoIDS)) {
-
-    expectedVideoDuration = durationPerValidVideoIDS[videoID];
-
-    let [flagAdsPassed, audioElementPromise] = await Promise.allSettled([
-      adsPassed(expectedVideoDuration),
-      audioLoaded()
-    ]);
-
-    var audioElement = audioElementPromise.value;
-    audioLength = audioElement.duration;
-
-    audioElement.currentTime = 0;
-    video.currentTime = 0;
-
-    if (VERBOSE) { console.log(flagAdsPassed);}
-    if (VERBOSE) { console.log(audioElement);}
-    if (VERBOSE) { console.log(video);}
-
-    audioElement.addEventListener("canplay", (event) => {
-
-      if (VERBOSE) { console.log("can play");}
-      video.play();
-      video.muted = true;
-      audioElement.play();
-
-      // If the YT player was muted by default, mute the audio
-      if (muteButton.title == "Unmute (m)") {
-        if (VERBOSE) { console.log("auto mute");}
-        audioElement.muted = true;
-      }
-    });
-
-    video.addEventListener("pause", (event) => {
-      if (VERBOSE) { console.log("pause");}
-      audioElement.pause();
-    })
-    video.addEventListener("play", (event) => {
-      if (VERBOSE) { console.log("play");}
-      audioElement.play();
-    })
-
-    //TODO: Fix issue when click drag and cursor out of image
-    progressBar.addEventListener("click", function () {
-      if (VERBOSE) { console.log("change time: audio, video");}
-      if (VERBOSE) { console.log(audioElement.currentTime);}
-      if (VERBOSE) { console.log(video.currentTime);}
-      audioElement.currentTime = video.currentTime % audioLength;
-      if (VERBOSE) { console.log(audioElement.currentTime);}
-      if (VERBOSE) { console.log(video.currentTime);}
-    });
-
-    muteButton = document.getElementsByClassName("ytp-mute-button")[0];
-    muteButton.addEventListener("click", function () {
-      if (VERBOSE) { console.log("mute/unmute");}
-      audioElement.muted = !audioElement.muted;
-      video.muted = true;
-    });
-
-    chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
-      if (request.message === "TabUpdated") {
-        if (VERBOSE) { console.log("URL changed: reload page");}
-        location.reload();
-      }
-    })
+    replaceAudio(videoID, durationPerValidVideoIDS);
+  } else {
+    if (VERBOSE) { console.log("Video not in DB");}
   }
 }
 

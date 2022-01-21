@@ -1,12 +1,3 @@
-chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
-    if (changeInfo.url) {
-      chrome.tabs.sendMessage(tabId, {
-        message: "TabUpdated"
-      });
-    }
-  }
-);
-
 function setIcon() {
   chrome.storage.local.get(["action"], function (results) {
     isExtensionOn = results.action;
