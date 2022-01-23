@@ -30,16 +30,6 @@ async function getDB() {
   return durationPerValidVideoIDS;
 }
 
-function videoInDB(url, videoID, validVideoIDS) {
-
-  if (VERBOSE) { console.log();}
-
-  if (url.includes(YOUTUBE_PREFIX) && validVideoIDS.includes(videoID)) {
-    return true;
-  }
-  return false;
-}
-
 async function adsPassed2() {
 
   let promise = new Promise((res, rej) => {
@@ -75,72 +65,94 @@ async function audioLoaded() {
     Expires: signedUrlExpireSeconds
   });
 
-  var audioElement = document.createElement("audio");
-  audioElement.setAttribute("preload", "auto");
-  audioElement.autobuffer = true;
+  var audio = document.createElement("audio");
+  audio.setAttribute("preload", "auto");
+  audio.autobuffer = true;
   var audioSource = document.createElement("source");
   audioSource.type = "audio/mpeg";
   audioSource.src = readSignedUrl;
-  audioElement.appendChild(audioSource);
-  audioElement.load;
+  audio.appendChild(audioSource);
+  audio.load;
 
   let promise = new Promise((res, rej) => {
-    setTimeout(() => res(audioElement), 1)
+    setTimeout(() => res(audio), 1)
   });
 
   return promise;
 }
 
-async function replaceAudio(videoID, durationPerValidVideoIDS) {
+async function replaceAudio(videoID, videoDuration) {
+
+  let audioCanPlay = false;
+  let videoCanPlay = false;
+
+  if (VERBOSE) { console.log("stream music"); }
+
+  muteButton = document.getElementsByClassName("ytp-mute-button")[0];
 
   const video = document.querySelector("video");
 
-  expectedVideoDuration = durationPerValidVideoIDS[videoID];
-
-  let [flagAdsPassed, audioElementPromise] = await Promise.allSettled([
-    adsPassed(expectedVideoDuration),
+  let [flagAdsPassed, audioPromise] = await Promise.allSettled([
+    adsPassed(videoDuration),
     audioLoaded(videoID)
   ]);
 
-  var audioElement = audioElementPromise.value;
+  video.pause();
 
-  audioElement.currentTime = 0;
+  var audio = audioPromise.value;
+  let audioDuration = audio.duration;
+
+  audio.currentTime = 0;
   video.currentTime = 0;
 
+  function audioPlay() {
+    audioCanPlay = true;
+    if (VERBOSE) { console.log("audio can play");}
+    if(videoCanPlay) play();
+  }
+  function videoPlay() {
+    videoCanPlay = true;
+    if (VERBOSE) { console.log("video can play");}
+    if(audioCanPlay) play();
+  }
+  audio.addEventListener("canplay", audioPlay);
+  video.addEventListener("canplay", videoPlay);
+
   if (VERBOSE) { console.log(flagAdsPassed);}
-  if (VERBOSE) { console.log(audioElement);}
+  if (VERBOSE) { console.log(audio);}
   if (VERBOSE) { console.log(video);}
 
-  audioElement.addEventListener("canplay", (event) => {
+  function play() {
 
     if (VERBOSE) { console.log("can play");}
     video.play();
     video.muted = true;
-    audioElement.play();
+    audio.play();
 
     // If the YT player was muted by default, mute the audio
     if (muteButton.title == "Unmute (m)") {
       if (VERBOSE) { console.log("auto mute");}
-      audioElement.muted = true;
+      audio.muted = true;
     }
-  });
+  };
 
   video.addEventListener("pause", (event) => {
     if (VERBOSE) { console.log("pause");}
-    audioElement.pause();
+    audio.pause();
   })
   video.addEventListener("play", (event) => {
     if (VERBOSE) { console.log("play");}
-    audioElement.play();
+    audio.play();
   })
 
   //TODO: Fix issue when click drag and cursor out of image
+  progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
   progressBar.addEventListener("click", function () {
     if (VERBOSE) { console.log("change time: audio, video");}
-    if (VERBOSE) { console.log(audioElement.currentTime);}
+    if (VERBOSE) { console.log(audio.currentTime);}
     if (VERBOSE) { console.log(video.currentTime);}
-    audioElement.currentTime = video.currentTime;
-    if (VERBOSE) { console.log(audioElement.currentTime);}
+    audio.currentTime = video.currentTime % audioDuration;
+    if (VERBOSE) { console.log(audio.currentTime);}
     if (VERBOSE) { console.log(video.currentTime);}
   });
 
@@ -150,38 +162,41 @@ async function replaceAudio(videoID, durationPerValidVideoIDS) {
     location.reload();
   });
 
-  muteButton = document.getElementsByClassName("ytp-mute-button")[0];
   muteButton.addEventListener("click", function () {
     if (VERBOSE) { console.log("mute/unmute");}
-    audioElement.muted = !audioElement.muted;
+    audio.muted = !audio.muted;
     video.muted = true;
   });
 }
 
-async function streamMusic() {
-
-  muteButton = document.getElementsByClassName("ytp-mute-button")[0];
-  progressBar = document.getElementsByClassName("ytp-progress-bar")[0];
+async function videoInDB() {
 
   let durationPerValidVideoIDS = await getDB();
   let validVideoIDS = Object.keys(durationPerValidVideoIDS);
-  if (VERBOSE) { console.log(validVideoIDS);}
+  if (VERBOSE) { console.log(validVideoIDS); }
 
   const url = location.href;
   const videoID = url.split("&")[0].replace(YOUTUBE_PREFIX, "");
 
-  if (videoInDB(url, videoID, validVideoIDS)) {
-    replaceAudio(videoID, durationPerValidVideoIDS);
-  } else {
-    if (VERBOSE) { console.log("Video not in DB");}
+  if (url.includes(YOUTUBE_PREFIX) && validVideoIDS.includes(videoID)) {
+    videoDuration = durationPerValidVideoIDS[videoID];
+    return [true, videoID, videoDuration];
   }
+  return [false, "", 0];
 }
 
-chrome.storage.local.get(["action"], function (result) {
+chrome.storage.local.get(["action"], async function (result) {
   isExtensionOn = result.action;
   if (isExtensionOn) {
-    if (VERBOSE) { console.log("stream music");}
-    streamMusic();
+    let [videoIsInDB, videoID, videoDuration] = await videoInDB();
+    if (VERBOSE) { console.log(videoIsInDB); }
+    if (VERBOSE) { console.log(videoID); }
+    if (VERBOSE) {console.log(videoDuration);}
+    if (videoIsInDB) {
+      replaceAudio(videoID, videoDuration);
+    } else {
+      if (VERBOSE) {console.log("Video not in DB");}
+    }
   }
 });
 
