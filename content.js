@@ -1,4 +1,4 @@
-const VERBOSE = true;
+const VERBOSE = false;
 
 const BUCKET_NAME = "pure-asmr";
 const YOUTUBE_PREFIX = "https://www.youtube.com/watch?v=";
