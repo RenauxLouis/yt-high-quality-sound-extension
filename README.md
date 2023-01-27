@@ -1,5 +1,4 @@
-# pure-asmr
-Browser extension to play high quality audio over YT video
+# Browser extension to play high quality audio over YT video
 
 # First Setup
 
