@@ -4,8 +4,8 @@ const BUCKET_NAME = "pure-asmr";
 const YOUTUBE_PREFIX = "https://www.youtube.com/watch?v=";
 
 //TODO: Move AWS init to background.js
-const accessKeyId = "AKIAUEKUXBWYSUCT7QCF";
-const secretAccessKey = "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";
+const accessKeyId = "AKIAUEKUXBWYSUCT7QCF"; # Deactivated key
+const secretAccessKey = "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"; # Deactivated key
 const AWS = require("aws-sdk")
 const signedUrlExpireSeconds = 60 * 5
 AWS.config.update({
